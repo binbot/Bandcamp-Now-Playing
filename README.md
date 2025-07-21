@@ -37,7 +37,7 @@ Choose the version that matches your browser:
 ### Firefox/Gecko (Manifest V2)
 
 1. Download or clone this repo.
-2. Open Firefox (or Zend browser).
+2. Open Firefox.
 3. Go to `about:debugging#/runtime/this-firefox`
 4. Click “Load Temporary Add-on.”
 5. Select the `manifest.json` file inside the `firefox/` folder.
