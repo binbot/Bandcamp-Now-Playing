@@ -1,1 +1,24 @@
-//
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bandcamp → Mastodon</title>
+    <style>
+        body { font-family: sans-serif; width: 250px; padding: 10px; }
+        input { width: 100%; margin-bottom: 10px; }
+        button { width: 100%; margin-bottom: 10px; }
+        #nowplaying { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h3>Mastodon Settings</h3>
+    <input id="instance" placeholder="Instance URL (e.g. https://mastodon.social)" />
+    <input id="token" placeholder="Access Token" type="password" />
+    <button id="save">Save</button>
+    <div id="status"></div>
+    <hr>
+    <div id="nowplaying">Loading now playing info…</div>
+    <button id="postnow">Post Now</button>
+    <div id="poststatus"></div>
+    <script src="popup.js"></script>
+</body>
+</html>
