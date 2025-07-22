@@ -76,7 +76,6 @@ MIT — do whatever you like, just don’t blame me if you accidentally share yo
 
 - Bandcamp for the music.
 - Mastodon for the fediverse.
-- [Your Name] for the code.
 
 ---
 
