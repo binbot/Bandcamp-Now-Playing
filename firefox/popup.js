@@ -47,9 +47,15 @@ function fetchNowPlaying() {
 
 document.getElementById('postnow').onclick = () => {
     if (window._nowPlaying && window._nowPlaying.title) {
+        const comment = document.getElementById('comment').value.trim();
+        const tags = document.getElementById('tags').value.trim();
         chrome.runtime.sendMessage({
             type: "postNowPlaying",
-            data: window._nowPlaying
+            data: {
+                ...window._nowPlaying,
+                comment,
+                tags
+            }
         });
         document.getElementById('poststatus').textContent = "Posted!";
     } else {

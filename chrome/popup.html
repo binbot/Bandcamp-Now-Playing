@@ -4,7 +4,7 @@
     <title>Bandcamp → Mastodon</title>
     <style>
         body { font-family: sans-serif; width: 250px; padding: 10px; }
-        input { width: 100%; margin-bottom: 10px; }
+        textarea, input { width: 100%; margin-bottom: 10px; box-sizing: border-box; }
         button { width: 100%; margin-bottom: 10px; }
         #nowplaying { margin-bottom: 10px; }
     </style>
@@ -17,6 +17,8 @@
     <div id="status"></div>
     <hr>
     <div id="nowplaying">Loading now playing info…</div>
+    <textarea id="comment" placeholder="Add a comment..." rows="3"></textarea>
+    <input id="tags" placeholder="Tags (e.g. #genre #bandname)" />
     <button id="postnow">Post Now</button>
     <div id="poststatus"></div>
     <script src="popup.js"></script>

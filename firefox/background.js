@@ -35,9 +35,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "postNowPlaying") {
         if (mastodonToken && mastodonInstance) {
-            let status = `🎵 Now playing: ${message.data.title}`;
+            let status = '';
+            if (message.data.comment) {
+                status += message.data.comment + '\n\n';
+            }
+            status += `🎵 Now playing: ${message.data.title}`;
             if (message.data.artist) status += ` by ${message.data.artist}`;
             if (message.data.trackUrl) status += `\n${message.data.trackUrl}`;
+
+            let tags = '#nowplaying';
+            if (message.data.tags) {
+                tags += ' ' + message.data.tags;
+            }
+            status += `\n\n${tags}`;
+
             postToMastodon(status);
         } else {
             console.warn('Mastodon credentials missing! Token:', mastodonToken, 'Instance:', mastodonInstance);
