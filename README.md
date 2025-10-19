@@ -15,11 +15,12 @@ A simple browser extension to share your currently playing Bandcamp track—comp
 
 ## Browser Support
 
-This extension works in both **Chrome/Chromium** and **Firefox/Gecko** browsers.  
+This extension works in **Chrome/Chromium**, **Firefox/Gecko**, and **Safari** browsers.
 Choose the version that matches your browser:
 
 - **Chrome/Chromium:** Use the files in the `chrome/` folder (Manifest V3).
 - **Firefox/Gecko (including Zend):** Use the files in the `firefox/` folder (Manifest V2).
+- **Safari (macOS):** Use the files in the `safari/` folder (Manifest V3-based, requires conversion).
 
 ---
 
@@ -44,6 +45,36 @@ Choose the version that matches your browser:
 6. Click the extension icon, enter your Mastodon instance URL and access token (with `write:statuses` permission).
 7. Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
 
+### Safari (macOS)
+
+Safari extensions require a different installation process involving Xcode.
+
+1.  **Prerequisites:**
+    *   A Mac with Xcode installed.
+    *   An Apple Developer Program membership (for distribution, not for local testing).
+
+2.  **Convert the Extension:**
+    *   Open the Terminal app on your Mac.
+    *   Navigate to your project directory.
+    *   Run the following command to convert the web extension into an Xcode project:
+        ```bash
+        xcrun safari-web-extension-converter safari/
+        ```
+
+3.  **Build and Run in Xcode:**
+    *   Open the generated Xcode project.
+    *   Select "My Mac" as the build target (next to the Run button).
+    *   Click the Run button (▸) to build the extension and launch Safari.
+
+4.  **Enable the Extension in Safari:**
+    *   In Safari, go to `Safari > Preferences > Advanced` and enable "Show Develop menu in menu bar".
+    *   Go to the new `Develop` menu and select "Allow Unsigned Extensions".
+    *   Go to `Safari > Preferences > Extensions` and check the box next to "Bandcamp Now Playing to Mastodon" to enable it.
+
+5.  **Usage:**
+    *   Click the extension icon, enter your Mastodon instance URL and access token.
+    *   Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
+
 ---
 
 ## How It Works
@@ -58,6 +89,7 @@ Choose the version that matches your browser:
 
 - [ ] Create and publish a proper Chrome Web Store extension.
 - [ ] Create and publish a proper Firefox Add-ons (AMO) extension.
+- [ ] Create and publish a proper Safari App Store extension.
 - [ ] Add support for more music sites (SoundCloud, YouTube Music, etc).
 - [ ] Option to auto-post on track change.
 - [ ] Customizable post message templates.
