@@ -24,9 +24,42 @@ Choose the version that matches your browser:
 
 ---
 
+### Getting a Mastodon Access Token
+
+To use this extension, you need to generate an access token from your Mastodon account. This token allows the extension to post on your behalf.
+
+1.  Log in to your Mastodon account on your instance (e.g., `mastodon.social`).
+2.  Go to **Preferences > Development**.
+3.  Click **"New Application"**.
+4.  Give your application a **Name** (e.g., "Bandcamp Now Playing").
+5.  Under **Application scopes**, you only need to check the box for `write:statuses`.
+6.  Click **"Submit"**.
+7.  You will now see your new application in the list. Click on it.
+8.  Your access token will be displayed under **"Your access token"**. Copy this token and paste it into the extension's settings.
+
+---
+
 ## Installation & Usage
 
-### Chrome/Chromium (Manifest V3)
+### Easy Installation (Recommended)
+
+1.  Go to the [**Releases page**](https://github.com/YOUR_USERNAME/YOUR_REPONAME/releases) on GitHub.
+2.  Download the `.zip` file for your browser (`bandcamp-now-playing-chrome.zip` or `bandcamp-now-playing-firefox.zip`).
+3.  **For Chrome:**
+    *   Go to `chrome://extensions/`.
+    *   Enable "Developer mode".
+    *   Drag and drop the `bandcamp-now-playing-chrome.zip` file onto the page.
+4.  **For Firefox:**
+    *   Go to `about:addons`.
+    *   Click the gear icon and select "Install Add-on From File...".
+    *   Select the `bandcamp-now-playing-firefox.zip` file.
+5.  Click the extension icon, enter your Mastodon instance URL and access token.
+6.  Start playing a track on Bandcamp and enjoy!
+
+
+### Developer Installation (from Source)
+
+#### Chrome/Chromium (Manifest V3)
 
 1. Download or clone this repo.
 2. Go to `chrome://extensions/` in Chrome.
@@ -35,7 +68,7 @@ Choose the version that matches your browser:
 5. Click the extension icon and enter your Mastodon instance URL and access token (with `write:statuses` permission).
 6. Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
 
-### Firefox/Gecko (Manifest V2)
+#### Firefox/Gecko (Manifest V2)
 
 1. Download or clone this repo.
 2. Open Firefox.
@@ -45,7 +78,7 @@ Choose the version that matches your browser:
 6. Click the extension icon, enter your Mastodon instance URL and access token (with `write:statuses` permission).
 7. Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
 
-### Safari (macOS)
+#### Safari (macOS)
 
 Safari extensions require a different installation process involving Xcode.
 
