@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.data.comment) {
                 status += message.data.comment + '\n\n';
             }
-            status += `🎵 Now playing: ${message.data.title}`;
+            status += `\u{1F3B5} Now playing: ${message.data.title}`;
             if (message.data.artist) status += ` by ${message.data.artist}`;
             if (message.data.trackUrl) status += `\n${message.data.trackUrl}`;
 
