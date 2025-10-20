@@ -23,6 +23,9 @@
   "action": {
     "default_popup": "popup.html"
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://cdn.jsdelivr.net;"
+  },
   "browser_specific_settings": {
     "safari": {
       "strict_min_version": "15"
