@@ -1,3 +1,18 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const desiredWidth = 400;
+    const desiredHeight = 600; // Adjust as needed
+
+    // Directly set body style for immediate effect
+    document.body.style.width = `${desiredWidth}px`;
+    document.body.style.height = `${desiredHeight}px`;
+
+    // Use window.resizeTo as a secondary measure
+    window.resizeTo(desiredWidth, desiredHeight);
+
+    // Call fetchNowPlaying after sizing is applied
+    fetchNowPlaying();
+});
+
 // popup.js
 
 function updateNowPlayingDisplay(info) {
@@ -43,7 +58,7 @@ function fetchNowPlaying() {
             window._nowPlaying = response;
         });
     });
-}
+};
 
 document.getElementById('postnow').onclick = () => {
     if (window._nowPlaying && window._nowPlaying.title) {
@@ -63,4 +78,3 @@ document.getElementById('postnow').onclick = () => {
     }
 };
 
-fetchNowPlaying();
