@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bandcamp → Mastodon</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+
+
+</head>
+<body>
+    <main class="container">
+        <h3>BlueSky Settings</h3>
+        <input id="handle" placeholder="BlueSky Handle (e.g. yourhandle.bsky.social)" />
+        <input id="appPassword" placeholder="App Password" type="password" />
+        <button id="save">Save</button>
+        <div id="status"></div>
+        <hr>
+        <div id="nowplaying">Loading now playing info…</div>
+        <textarea id="comment" placeholder="Add a comment..." rows="3"></textarea>
+        <input id="tags" placeholder="Tags (e.g. #genre #bandname)" />
+        <button id="postnow">Post Now</button>
+        <div id="poststatus"></div>
+    </main>
+    <script src="popup.js"></script>
+</body>
+</html>
