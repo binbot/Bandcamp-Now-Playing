@@ -10,7 +10,8 @@
   ],
   "host_permissions": [
     "https://*.bandcamp.com/*",
-    "https://bsky.social/*"
+    "https://bsky.social/*",
+    "https://api.dub.co/*"
   ],
   "background": {
     "service_worker": "background.js"

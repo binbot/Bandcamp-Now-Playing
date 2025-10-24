@@ -36,7 +36,48 @@ async function postToBluesky(postData) {
 
     const accessJwt = session.accessJwt;
 
-    // 2. Create Post (Skeet)
+    // 2. Fetch metadata from Dub.co
+    let embedExternal = {};
+    try {
+        const dubResponse = await fetch(`https://api.dub.co/metatags?url=${encodeURIComponent(postData.trackUrl)}`);
+        const dubData = await dubResponse.json();
+
+        if (dubResponse.ok && dubData.title) {
+            embedExternal = {
+                $type: "app.bsky.embed.external",
+                external: {
+                    uri: postData.trackUrl,
+                    title: dubData.title || postData.title,
+                    description: dubData.description || `${postData.title} by ${postData.artist}`,
+                    // We are not uploading the image blob for now, just passing the URL if available
+                    // BlueSky might still unfurl a richer card with just title/description
+                    ...(dubData.image && { thumb: { $type: "blob", ref: { $link: dubData.image }, mimeType: "image/jpeg", size: 0 } }) // Placeholder for thumb
+                }
+            };
+        } else {
+            console.warn('Failed to fetch metadata from Dub.co, using basic embed.', dubData);
+            embedExternal = {
+                $type: "app.bsky.embed.external",
+                external: {
+                    uri: postData.trackUrl,
+                    title: postData.title,
+                    description: `${postData.title} by ${postData.artist}`
+                }
+            };
+        }
+    } catch (error) {
+        console.error('Error fetching metadata from Dub.co:', error);
+        embedExternal = {
+            $type: "app.bsky.embed.external",
+            external: {
+                uri: postData.trackUrl,
+                title: postData.title,
+                description: `${postData.title} by ${postData.artist}`
+            }
+        };
+    }
+
+    // 3. Create Post (Skeet)
     try {
         const postResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.createRecord`, {
             method: "POST",
@@ -50,14 +91,7 @@ async function postToBluesky(postData) {
                 record: {
                     text: postData.text, // text is now fully constructed before being passed
                     createdAt: new Date().toISOString(),
-                    embed: { // Re-introducing embed for unfurling
-                        $type: "app.bsky.embed.external",
-                        external: {
-                            uri: postData.trackUrl,
-                            title: postData.title,
-                            description: `${postData.title} by ${postData.artist}`
-                        }
-                    }
+                    embed: embedExternal // Use the dynamically created embed object
                 }
             })
         });
