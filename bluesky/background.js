@@ -1,66 +1,108 @@
 // background.js
 
-let mastodonToken = null;
-let mastodonInstance = null;
+let blueskyAppPassword = null;
+let blueskyHandle = null;
 
-chrome.storage.local.get(['mastodonToken', 'mastodonInstance'], (result) => {
-    mastodonToken = result.mastodonToken;
-    mastodonInstance = result.mastodonInstance;
-    console.log('Loaded Mastodon credentials:', mastodonInstance, mastodonToken ? '[token set]' : '[no token]');
+chrome.storage.local.get(['blueskyAppPassword', 'blueskyHandle'], (result) => {
+    blueskyAppPassword = result.blueskyAppPassword;
+    blueskyHandle = result.blueskyHandle;
+    console.log('Loaded BlueSky credentials:', blueskyHandle, blueskyAppPassword ? '[password set]' : '[no password]');
 });
 
-function postToMastodon(status) {
-    fetch(`${mastodonInstance}/api/v1/statuses`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${mastodonToken}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ status })
-    })
-    .then(response => {
-        console.log('Mastodon fetch response status:', response.status);
-        return response.json().catch(() => ({}));
-    })
-    .then(data => {
-        console.log('Mastodon response data:', data);
-    })
-    .catch(error => {
-        console.error('Mastodon post error:', error);
-    });
+async function postToBluesky(postData) {
+    const pdsUrl = 'https://bsky.social'; // Bluesky PDS URL
+
+    // 1. Create Session (Authenticate)
+    let session;
+    try {
+        const sessionResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.server.createSession`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                identifier: blueskyHandle,
+                password: blueskyAppPassword
+            })
+        });
+        session = await sessionResponse.json();
+        if (!sessionResponse.ok) {
+            console.error('BlueSky session creation failed:', session);
+            return;
+        }
+        console.log('BlueSky session created:', session);
+    } catch (error) {
+        console.error('BlueSky session creation error:', error);
+        return;
+    }
+
+    const accessJwt = session.accessJwt;
+
+    // 2. Create Post (Skeet)
+    try {
+        const postResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.createRecord`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessJwt}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                repo: blueskyHandle,
+                collection: "app.bsky.feed.post",
+                record: {
+                    text: postData.text, // text is now fully constructed before being passed
+                    createdAt: new Date().toISOString(),
+                    embed: { // Re-introducing embed for unfurling
+                        $type: "app.bsky.embed.external",
+                        external: {
+                            uri: postData.trackUrl,
+                            title: postData.title,
+                            description: `${postData.title} by ${postData.artist}`
+                        }
+                    }
+                }
+            })
+        });
+        const postResult = await postResponse.json();
+        if (!postResponse.ok) {
+            console.error('BlueSky post failed:', postResult);
+            return;
+        }
+        console.log('BlueSky post successful:', postResult);
+    } catch (error) {
+        console.error('BlueSky post error:', error);
+    }
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('Background received message:', message);
 
     if (message.type === "postNowPlaying") {
-        if (mastodonToken && mastodonInstance) {
-            let status = '';
+        if (blueskyAppPassword && blueskyHandle) {
+            let text = '';
             if (message.data.comment) {
-                status += message.data.comment + '\n\n';
+                text += message.data.comment + '\n\n';
             }
-            status += `\u{1F3B5} Now playing: ${message.data.title}`;
-            if (message.data.artist) status += ` by ${message.data.artist}`;
-            if (message.data.trackUrl) status += `\n${message.data.trackUrl}`;
+            text += `\u{1F3B5} Now playing: ${message.data.title}`;
+            if (message.data.artist) text += ` by ${message.data.artist}`;
 
+            // Add tags
             let tags = '#nowplaying';
             if (message.data.tags) {
                 tags += ' ' + message.data.tags;
             }
-            status += `\n\n${tags}`;
+            text += `\n\n${tags}`;
 
-            postToMastodon(status);
+            postToBluesky({ text, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
         } else {
-            console.warn('Mastodon credentials missing! Token:', mastodonToken, 'Instance:', mastodonInstance);
+            console.warn('BlueSky credentials missing! Handle:', blueskyHandle, 'App Password:', blueskyAppPassword ? '[set]' : '[not set]');
         }
-    } else if (message.type === "saveMastodonCredentials") {
-        mastodonToken = message.token;
-        mastodonInstance = message.instance;
+    } else if (message.type === "saveBlueskyCredentials") {
+        blueskyAppPassword = message.appPassword;
+        blueskyHandle = message.handle;
         chrome.storage.local.set({
-            mastodonToken,
-            mastodonInstance
+            blueskyAppPassword,
+            blueskyHandle
         }, () => {
-            console.log('Saved Mastodon credentials.');
+            console.log('Saved BlueSky credentials.');
         });
     }
 });
