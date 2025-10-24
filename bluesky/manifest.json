@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "https://api.dub.co/*"
   ],
   "host_permissions": [
     "https://*.bandcamp.com/*",
