@@ -3,12 +3,10 @@
 let blueskyAppPassword = null;
 let blueskyHandle = null;
 
-chrome.storage.local.get(['blueskyAppPassword', 'blueskyHandle'], (result)
-=> {
+chrome.storage.local.get(['blueskyAppPassword', 'blueskyHandle'], (result) => {
     blueskyAppPassword = result.blueskyAppPassword;
     blueskyHandle = result.blueskyHandle;
-    console.log('Loaded BlueSky credentials:', blueskyHandle,
-blueskyAppPassword ? '[password set]' : '[no password]');
+    console.log('Loaded BlueSky credentials:', blueskyHandle, blueskyAppPassword ? '[password set]' : '[no password]');
 });
 
 async function postToBluesky(postData) {
@@ -17,8 +15,7 @@ async function postToBluesky(postData) {
     // 1. Create Session (Authenticate)
     let session;
     try {
-        const sessionResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.
-server.createSession`, {
+        const sessionResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.server.createSession`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -43,8 +40,7 @@ server.createSession`, {
     let embedExternal = {};
     let thumbBlob = null;
     try {
-        const dubResponse = await fetch(`https://api.dub.
-co/metatags?url=${encodeURIComponent(postData.trackUrl)}`);
+        const dubResponse = await fetch(`https://api.dub.co/metatags?url=${encodeURIComponent(postData.trackUrl)}`);
         const dubData = await dubResponse.json();
 
         if (dubResponse.ok && dubData.title) {
@@ -53,17 +49,14 @@ co/metatags?url=${encodeURIComponent(postData.trackUrl)}`);
                 try {
                     const imageResponse = await fetch(dubData.image);
                     const imageBlob = await imageResponse.blob();
-                    const uploadResponse = await fetch(`${pdsUrl}/xrpc/com.
-atproto.repo.uploadBlob`, {
+                    const uploadResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.uploadBlob`, {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${accessJwt}`,
-'Content-Type': imageBlob.type },
+                        headers: { 'Authorization': `Bearer ${accessJwt}`, 'Content-Type': imageBlob.type },
                         body: imageBlob
                     });
                     const uploadData = await uploadResponse.json();
                     if (uploadResponse.ok) {
-                        thumbBlob = { $type: 'blob', ref: uploadData.blob.
-ref, mimeType: uploadData.blob.mimeType, size: uploadData.blob.size };
+                        thumbBlob = { $type: 'blob', ref: uploadData.blob.ref, mimeType: uploadData.blob.mimeType, size: uploadData.blob.size };
                     }
                 } catch (error) {
                     console.error('Image upload failed:', error);
@@ -75,14 +68,12 @@ ref, mimeType: uploadData.blob.mimeType, size: uploadData.blob.size };
                 external: {
                     uri: postData.trackUrl,
                     title: dubData.title || postData.title,
-                    description: dubData.description || `${postData.title}
-by ${postData.artist}`,
+                    description: dubData.description || `${postData.title} by ${postData.artist}`,
                     ...(thumbBlob && { thumb: thumbBlob })
                 }
             };
         } else {
-            console.warn('Failed to fetch metadata from Dub.co, using
-basic embed.', dubData);
+            console.warn('Failed to fetch metadata from Dub.co, using basic embed.', dubData);
             embedExternal = {
                 $type: "app.bsky.embed.external",
                 external: {
@@ -106,8 +97,7 @@ basic embed.', dubData);
 
     // 3. Create Post (Skeet)
     try {
-        const postResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.
-createRecord`, {
+        const postResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.createRecord`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${accessJwt}`,
@@ -117,11 +107,9 @@ createRecord`, {
                 repo: blueskyHandle,
                 collection: "app.bsky.feed.post",
                 record: {
-                    text: postData.text, // text is now fully constructed
-before being passed
+                    text: postData.text, // text is now fully constructed before being passed
                     createdAt: new Date().toISOString(),
-                    embed: embedExternal // Use the dynamically created
-embed object
+                    embed: embedExternal // Use the dynamically created embed object
                 }
             })
         });
@@ -151,18 +139,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             // Add tags
             let tags = '#nowplaying';
             if (message.data.tags) {
-                const userTags = message.data.tags.split(' ').map(tag =>
-`#${tag.trim()}`).join(' ');
+                const userTags = message.data.tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
                 tags += ' ' + userTags;
             }
             text += `\n\n${tags}`;
 
-            postToBluesky({ text, title: message.data.title, artist:
-message.data.artist, trackUrl: message.data.trackUrl });
+            postToBluesky({ text, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
         } else {
-            console.warn('BlueSky credentials missing! Handle:',
-blueskyHandle, 'App Password:', blueskyAppPassword ? '[set]' : '[not
-set]');
+            console.warn('BlueSky credentials missing! Handle:', blueskyHandle, 'App Password:', blueskyAppPassword ? '[set]' : '[not set]');
         }
     } else if (message.type === "saveBlueskyCredentials") {
         blueskyAppPassword = message.appPassword;
