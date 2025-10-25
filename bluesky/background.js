@@ -35,60 +35,18 @@ async function postToBluesky(postData) {
     }
 
     const accessJwt = session.accessJwt;
+    const repo = session.did;
 
-    // 2. Fetch metadata from Bandcamp page
-    let embedExternal = {};
-    let thumbBlob = null;
-    try {
-        const pageResponse = await fetch(postData.trackUrl);
-        const html = await pageResponse.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        const title = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || postData.title;
-        const description = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || `${postData.title} by ${postData.artist}`;
-        const imageUrl = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
-
-        // Upload image if available
-        if (imageUrl) {
-            try {
-                const imageResponse = await fetch(imageUrl);
-                const imageBlob = await imageResponse.blob();
-                const uploadResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.uploadBlob`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${accessJwt}`, 'Content-Type': imageBlob.type },
-                    body: imageBlob
-                });
-                const uploadData = await uploadResponse.json();
-                if (uploadResponse.ok) {
-                    thumbBlob = { $type: 'blob', ref: uploadData.blob.ref, mimeType: uploadData.blob.mimeType, size: uploadData.blob.size };
-                }
-            } catch (error) {
-                console.error('Image upload failed:', error);
-            }
+    // 2. Basic embed without metadata fetch for debugging
+    let embedExternal = {
+        $type: "app.bsky.embed.external",
+        external: {
+            uri: postData.trackUrl,
+            title: postData.title,
+            description: `${postData.title} by ${postData.artist}`
         }
-
-        embedExternal = {
-            $type: "app.bsky.embed.external",
-            external: {
-                uri: postData.trackUrl,
-                title,
-                description,
-                ...(thumbBlob && { thumb: thumbBlob })
-            }
-        };
-        console.log('Embed created:', embedExternal);
-    } catch (error) {
-        console.error('Error fetching metadata from Bandcamp:', error);
-        embedExternal = {
-            $type: "app.bsky.embed.external",
-            external: {
-                uri: postData.trackUrl,
-                title: postData.title,
-                description: `${postData.title} by ${postData.artist}`
-            }
-        };
-    }
+    };
+    console.log('Embed created:', embedExternal);
 
     // 3. Create Post (Skeet)
     try {
@@ -99,7 +57,7 @@ async function postToBluesky(postData) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                repo: blueskyHandle,
+                repo: repo,
                 collection: "app.bsky.feed.post",
                 record: {
                     text: postData.text, // text is now fully constructed before being passed
@@ -111,6 +69,7 @@ async function postToBluesky(postData) {
         const postResult = await postResponse.json();
         if (!postResponse.ok) {
             console.error('BlueSky post failed:', postResult);
+            console.error('Post response status:', postResponse.status);
             return;
         }
         console.log('BlueSky post successful:', postResult);
