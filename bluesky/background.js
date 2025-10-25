@@ -108,8 +108,7 @@ async function postToBluesky(postData) {
                 collection: "app.bsky.feed.post",
                 record: {
                     text: postData.text, // text is now fully constructed before being passed
-                    createdAt: new Date().toISOString(),
-                    embed: embedExternal // Use the dynamically created embed object
+                    createdAt: new Date().toISOString()
                 }
             })
         });
@@ -142,7 +141,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 const userTags = message.data.tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
                 tags += ' ' + userTags;
             }
-            text += `\n\n${tags}`;
+            text += `\n\n${tags}\n\n${message.data.trackUrl}`;
 
             postToBluesky({ text, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
         } else {
