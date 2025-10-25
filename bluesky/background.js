@@ -77,6 +77,7 @@ async function postToBluesky(postData) {
                 ...(thumbBlob && { thumb: thumbBlob })
             }
         };
+        console.log('Embed created:', embedExternal);
     } catch (error) {
         console.error('Error fetching metadata from Bandcamp:', error);
         embedExternal = {
