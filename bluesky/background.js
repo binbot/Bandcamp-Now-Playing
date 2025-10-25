@@ -36,55 +36,49 @@ async function postToBluesky(postData) {
 
     const accessJwt = session.accessJwt;
 
-    // 2. Fetch metadata from Dub.co
+    // 2. Fetch metadata from Bandcamp page
     let embedExternal = {};
     let thumbBlob = null;
     try {
-        const dubResponse = await fetch(`https://api.dub.co/metatags?url=${encodeURIComponent(postData.trackUrl)}`);
-        const dubData = await dubResponse.json();
+        const pageResponse = await fetch(postData.trackUrl);
+        const html = await pageResponse.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-        if (dubResponse.ok && dubData.title) {
-            // Upload image if available
-            if (dubData.image) {
-                try {
-                    const imageResponse = await fetch(dubData.image);
-                    const imageBlob = await imageResponse.blob();
-                    const uploadResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.uploadBlob`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${accessJwt}`, 'Content-Type': imageBlob.type },
-                        body: imageBlob
-                    });
-                    const uploadData = await uploadResponse.json();
-                    if (uploadResponse.ok) {
-                        thumbBlob = { $type: 'blob', ref: uploadData.blob.ref, mimeType: uploadData.blob.mimeType, size: uploadData.blob.size };
-                    }
-                } catch (error) {
-                    console.error('Image upload failed:', error);
+        const title = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || postData.title;
+        const description = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || `${postData.title} by ${postData.artist}`;
+        const imageUrl = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
+
+        // Upload image if available
+        if (imageUrl) {
+            try {
+                const imageResponse = await fetch(imageUrl);
+                const imageBlob = await imageResponse.blob();
+                const uploadResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.repo.uploadBlob`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessJwt}`, 'Content-Type': imageBlob.type },
+                    body: imageBlob
+                });
+                const uploadData = await uploadResponse.json();
+                if (uploadResponse.ok) {
+                    thumbBlob = { $type: 'blob', ref: uploadData.blob.ref, mimeType: uploadData.blob.mimeType, size: uploadData.blob.size };
                 }
+            } catch (error) {
+                console.error('Image upload failed:', error);
             }
-
-            embedExternal = {
-                $type: "app.bsky.embed.external",
-                external: {
-                    uri: postData.trackUrl,
-                    title: dubData.title || postData.title,
-                    description: dubData.description || `${postData.title} by ${postData.artist}`,
-                    ...(thumbBlob && { thumb: thumbBlob })
-                }
-            };
-        } else {
-            console.warn('Failed to fetch metadata from Dub.co, using basic embed.', dubData);
-            embedExternal = {
-                $type: "app.bsky.embed.external",
-                external: {
-                    uri: postData.trackUrl,
-                    title: postData.title,
-                    description: `${postData.title} by ${postData.artist}`
-                }
-            };
         }
+
+        embedExternal = {
+            $type: "app.bsky.embed.external",
+            external: {
+                uri: postData.trackUrl,
+                title,
+                description,
+                ...(thumbBlob && { thumb: thumbBlob })
+            }
+        };
     } catch (error) {
-        console.error('Error fetching metadata from Dub.co:', error);
+        console.error('Error fetching metadata from Bandcamp:', error);
         embedExternal = {
             $type: "app.bsky.embed.external",
             external: {
@@ -108,7 +102,8 @@ async function postToBluesky(postData) {
                 collection: "app.bsky.feed.post",
                 record: {
                     text: postData.text, // text is now fully constructed before being passed
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    embed: embedExternal
                 }
             })
         });
@@ -141,7 +136,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 const userTags = message.data.tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
                 tags += ' ' + userTags;
             }
-            text += `\n\n${tags}\n\n${message.data.trackUrl}`;
+            text += `\n\n${tags}`;
 
             postToBluesky({ text, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
         } else {
