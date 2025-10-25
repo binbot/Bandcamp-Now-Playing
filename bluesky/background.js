@@ -153,13 +153,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             // Create facets for hashtags
             const facets = [];
+            const encoder = new TextEncoder();
+            const textBytes = encoder.encode(text);
             const tagRegex = /#(\w+)/g;
             let match;
             while ((match = tagRegex.exec(text)) !== null) {
+                const byteStart = encoder.encode(text.substring(0, match.index)).length;
+                const byteEnd = byteStart + encoder.encode(match[0]).length;
                 facets.push({
                     "$type": "app.bsky.richtext.facet",
                     "features": [{ "$type": "app.bsky.richtext.facet#tag", "tag": match[1] }],
-                    "index": { "byteStart": match.index, "byteEnd": match.index + match[0].length }
+                    "index": { "byteStart": byteStart, "byteEnd": byteEnd }
                 });
             }
 
