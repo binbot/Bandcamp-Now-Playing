@@ -46,12 +46,13 @@ async function postToBluesky(postData) {
         console.log('Page response status:', pageResponse.status);
         const html = await pageResponse.text();
         console.log('HTML length:', html.length);
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
 
-        const title = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || postData.title;
-        const description = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || `${postData.title} by ${postData.artist}`;
-        const imageUrl = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
+        const titleMatch = html.match(/<meta property="og:title" content="([^"]*)"/i);
+        const title = titleMatch ? titleMatch[1] : postData.title;
+        const descMatch = html.match(/<meta property="og:description" content="([^"]*)"/i);
+        const description = descMatch ? descMatch[1] : `${postData.title} by ${postData.artist}`;
+        const imageMatch = html.match(/<meta property="og:image" content="([^"]*)"/i);
+        const imageUrl = imageMatch ? imageMatch[1] : null;
         console.log('Extracted title:', title, 'desc:', description, 'image:', imageUrl);
 
         // Upload image if available
@@ -113,6 +114,7 @@ async function postToBluesky(postData) {
                 record: {
                     text: postData.text, // text is now fully constructed before being passed
                     createdAt: new Date().toISOString(),
+                    facets: postData.facets || [],
                     embed: embedExternal
                 }
             })
@@ -149,7 +151,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
             text += `\n\n${tags}`;
 
-            postToBluesky({ text, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
+            // Create facets for hashtags
+            const facets = [];
+            const tagRegex = /#(\w+)/g;
+            let match;
+            while ((match = tagRegex.exec(text)) !== null) {
+                facets.push({
+                    "$type": "app.bsky.richtext.facet",
+                    "features": [{ "$type": "app.bsky.richtext.facet#tag", "tag": match[1] }],
+                    "index": { "byteStart": match.index, "byteEnd": match.index + match[0].length }
+                });
+            }
+
+            postToBluesky({ text, facets, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
         } else {
             console.warn('BlueSky credentials missing! Handle:', blueskyHandle, 'App Password:', blueskyAppPassword ? '[set]' : '[not set]');
         }
