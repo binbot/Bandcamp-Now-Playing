@@ -63,9 +63,9 @@ document.getElementById('postnow').onclick = () => {
     if (window._nowPlaying && window._nowPlaying.title) {
         const comment = document.getElementById('comment').value.trim();
         let tags = document.getElementById('tags').value.trim();
-        // Prefix tags with #
+        // Ensure tags start with #
         if (tags) {
-            tags = tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
+            tags = tags.split(' ').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`).join(' ');
         }
         browser.runtime.sendMessage({
             type: "postNowPlaying",

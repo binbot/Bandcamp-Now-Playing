@@ -1,5 +1,11 @@
 // background.js
 
+function decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+}
+
 let blueskyAppPassword = null;
 let blueskyHandle = null;
 
@@ -48,9 +54,9 @@ async function postToBluesky(postData) {
         console.log('HTML length:', html.length);
 
         const titleMatch = html.match(/<meta property="og:title" content="([^"]*)"/i);
-        const title = titleMatch ? titleMatch[1] : postData.title;
+        const title = titleMatch ? decodeHtmlEntities(titleMatch[1]) : postData.title;
         const descMatch = html.match(/<meta property="og:description" content="([^"]*)"/i);
-        const description = descMatch ? descMatch[1] : `${postData.title} by ${postData.artist}`;
+        const description = descMatch ? decodeHtmlEntities(descMatch[1]) : `${postData.title} by ${postData.artist}`;
         const imageMatch = html.match(/<meta property="og:image" content="([^"]*)"/i);
         const imageUrl = imageMatch ? imageMatch[1] : null;
         console.log('Extracted title:', title, 'desc:', description, 'image:', imageUrl);
