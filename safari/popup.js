@@ -62,11 +62,8 @@ function fetchNowPlaying() {
 document.getElementById('postnow').onclick = () => {
     if (window._nowPlaying && window._nowPlaying.title) {
         const comment = document.getElementById('comment').value.trim();
-        let tags = document.getElementById('tags').value.trim();
-        // Ensure tags start with #
-        if (tags) {
-            tags = tags.split(' ').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`).join(' ');
-        }
+        const tags = document.getElementById('tags').value.trim();
+        // tags sent as is, # added in background
         browser.runtime.sendMessage({
             type: "postNowPlaying",
             data: {

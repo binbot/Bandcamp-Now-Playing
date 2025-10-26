@@ -152,7 +152,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             // Add tags
             let tags = '#nowplaying';
             if (message.data.tags) {
-                const userTags = message.data.tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
+                const userTags = message.data.tags.split(' ').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`).join(' ');
                 tags += ' ' + userTags;
             }
             text += `\n\n${tags}`;
