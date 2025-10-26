@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Bandcamp Now Playing to BlueSky",
+  "version": "1.1",
+  "description": "Manually post your currently playing Bandcamp track to BlueSky.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.bandcamp.com/*",
+    "https://*.bcbits.com/*",
+    "https://bsky.social/*"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.bandcamp.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';"
+  },
+  "browser_specific_settings": {
+    "safari": {
+      "strict_min_version": "15"
+    }
+  }
+}
