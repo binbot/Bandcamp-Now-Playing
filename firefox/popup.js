@@ -28,13 +28,13 @@ function updateNowPlayingDisplay(info) {
 }
 
 document.getElementById('save').onclick = () => {
-    const instance = document.getElementById('instance').value.trim();
-    const token = document.getElementById('token').value.trim();
-    if (instance && token) {
-        chrome.runtime.sendMessage({
-            type: "saveMastodonCredentials",
-            instance,
-            token
+    const handle = document.getElementById('handle').value.trim();
+    const appPassword = document.getElementById('appPassword').value.trim();
+    if (handle && appPassword) {
+        browser.runtime.sendMessage({
+            type: "saveBlueskyCredentials",
+            handle,
+            appPassword
         });
         document.getElementById('status').textContent = "Saved!";
     } else {
@@ -43,17 +43,16 @@ document.getElementById('save').onclick = () => {
 };
 
 // Load saved credentials
-chrome.storage.local.get(['mastodonInstance', 'mastodonToken'], (result) => {
-    if (result.mastodonInstance) document.getElementById('instance').value = result.mastodonInstance;
-    if (result.mastodonToken) document.getElementById('token').value = result.mastodonToken;
+browser.storage.local.get(['blueskyHandle', 'blueskyAppPassword'], (result) => {
+    if (result.blueskyHandle) document.getElementById('handle').value = result.blueskyHandle;
+    if (result.blueskyAppPassword) document.getElementById('appPassword').value = result.blueskyAppPassword;
 });
 
 // Get now playing info from the active tab
 function fetchNowPlaying() {
-    // Firefox uses "tabs" permission differently, but this works for MV3
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    browser.tabs.query({active: true, currentWindow: true}, function(tabs) {
         if (tabs.length === 0) return;
-        chrome.tabs.sendMessage(tabs[0].id, {type: "getNowPlaying"}, function(response) {
+        browser.tabs.sendMessage(tabs[0].id, {type: "getNowPlaying"}, function(response) {
             updateNowPlayingDisplay(response);
             window._nowPlaying = response;
         });
@@ -63,8 +62,12 @@ function fetchNowPlaying() {
 document.getElementById('postnow').onclick = () => {
     if (window._nowPlaying && window._nowPlaying.title) {
         const comment = document.getElementById('comment').value.trim();
-        const tags = document.getElementById('tags').value.trim();
-        chrome.runtime.sendMessage({
+        let tags = document.getElementById('tags').value.trim();
+        // Prefix tags with #
+        if (tags) {
+            tags = tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
+        }
+        browser.runtime.sendMessage({
             type: "postNowPlaying",
             data: {
                 ...window._nowPlaying,
