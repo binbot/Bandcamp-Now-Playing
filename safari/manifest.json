@@ -1,15 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "Bandcamp Now Playing to Mastodon",
+  "name": "Bandcamp Now Playing to BlueSky",
   "version": "1.1",
-  "description": "Manually post your currently playing Bandcamp track to Mastodon.",
+  "description": "Manually post your currently playing Bandcamp track to BlueSky.",
   "permissions": [
     "storage",
     "scripting",
     "activeTab"
   ],
   "host_permissions": [
-    "https://*.bandcamp.com/*"
+    "https://*.bandcamp.com/*",
+    "https://*.bcbits.com/*",
+    "https://bsky.social/*"
   ],
   "background": {
     "scripts": ["background.js"]
