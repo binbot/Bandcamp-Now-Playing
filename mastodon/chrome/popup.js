@@ -37,15 +37,39 @@ document.getElementById('save').onclick = () => {
             token
         });
         document.getElementById('status').textContent = "Saved!";
+        // Hide auth after save
+        setTimeout(() => {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('loggedInSection').style.display = 'block';
+            document.getElementById('loggedInMessage').textContent = `Logged in to ${instance}`;
+        }, 1000);
     } else {
         document.getElementById('status').textContent = "Please fill both fields.";
     }
 };
 
+document.getElementById('logout').onclick = () => {
+    chrome.storage.local.remove(['mastodonInstance', 'mastodonToken'], () => {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('loggedInSection').style.display = 'none';
+        document.getElementById('instance').value = '';
+        document.getElementById('token').value = '';
+        document.getElementById('status').textContent = "Logged out.";
+    });
+};
+
 // Load saved credentials
 chrome.storage.local.get(['mastodonInstance', 'mastodonToken'], (result) => {
-    if (result.mastodonInstance) document.getElementById('instance').value = result.mastodonInstance;
-    if (result.mastodonToken) document.getElementById('token').value = result.mastodonToken;
+    console.log('Loaded credentials:', result);
+    if (result.mastodonInstance && result.mastodonToken) {
+        // Hide auth, show logged in
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('loggedInSection').style.display = 'block';
+        document.getElementById('loggedInMessage').textContent = `Logged in to ${result.mastodonInstance}`;
+    } else {
+        if (result.mastodonInstance) document.getElementById('instance').value = result.mastodonInstance;
+        if (result.mastodonToken) document.getElementById('token').value = result.mastodonToken;
+    }
 });
 
 // Get now playing info from the active tab

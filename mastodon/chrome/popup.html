@@ -8,11 +8,17 @@
 </head>
 <body>
     <main class="container">
-        <h3>Mastodon Settings</h3>
-        <input id="instance" placeholder="Instance URL (e.g. https://mastodon.social)" />
-        <input id="token" placeholder="Access Token" type="password" />
-        <button id="save">Save</button>
-        <div id="status"></div>
+        <div id="authSection">
+            <h3>Mastodon Settings</h3>
+            <input id="instance" placeholder="Instance URL (e.g. https://mastodon.social)" />
+            <input id="token" placeholder="Access Token" type="password" />
+            <button id="save">Save</button>
+            <div id="status"></div>
+        </div>
+        <div id="loggedInSection" style="display: none;">
+            <p id="loggedInMessage"></p>
+            <button id="logout">Logout</button>
+        </div>
         <hr>
         <div id="nowplaying">Loading now playing info…</div>
         <textarea id="comment" placeholder="Add a comment..." rows="3"></textarea>
