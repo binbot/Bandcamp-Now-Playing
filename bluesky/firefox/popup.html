@@ -20,11 +20,17 @@
 </head>
 <body>
     <main class="container">
-        <h3>BlueSky Settings</h3>
-        <input id="handle" placeholder="Bluesky Handle (e.g. user.bsky.social)" />
-        <input id="appPassword" placeholder="App Password" type="password" />
-        <button id="save">Save</button>
-        <div id="status"></div>
+        <div id="authSection">
+            <h3>BlueSky Settings</h3>
+            <input id="handle" placeholder="Bluesky Handle (e.g. user.bsky.social)" />
+            <input id="appPassword" placeholder="App Password" type="password" />
+            <button id="save">Save</button>
+            <div id="status"></div>
+        </div>
+        <div id="loggedInSection" style="display: none;">
+            <p id="loggedInMessage"></p>
+            <button id="logout">Logout</button>
+        </div>
         <hr>
         <div id="nowplaying">Loading now playing info…</div>
         <textarea id="comment" placeholder="Add a comment..." rows="3"></textarea>

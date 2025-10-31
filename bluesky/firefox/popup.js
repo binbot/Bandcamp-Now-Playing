@@ -37,15 +37,39 @@ document.getElementById('save').onclick = () => {
             appPassword
         });
         document.getElementById('status').textContent = "Saved!";
+        // Hide auth after save
+        setTimeout(() => {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('loggedInSection').style.display = 'block';
+            document.getElementById('loggedInMessage').textContent = `Logged in as ${handle}`;
+        }, 1000);
     } else {
         document.getElementById('status').textContent = "Please fill both fields.";
     }
 };
 
+document.getElementById('logout').onclick = () => {
+    browser.storage.local.remove(['blueskyHandle', 'blueskyAppPassword'], () => {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('loggedInSection').style.display = 'none';
+        document.getElementById('handle').value = '';
+        document.getElementById('appPassword').value = '';
+        document.getElementById('status').textContent = "Logged out.";
+    });
+};
+
 // Load saved credentials
 browser.storage.local.get(['blueskyHandle', 'blueskyAppPassword'], (result) => {
-    if (result.blueskyHandle) document.getElementById('handle').value = result.blueskyHandle;
-    if (result.blueskyAppPassword) document.getElementById('appPassword').value = result.blueskyAppPassword;
+    console.log('Loaded credentials:', result);
+    if (result.blueskyHandle && result.blueskyAppPassword) {
+        // Hide auth, show logged in
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('loggedInSection').style.display = 'block';
+        document.getElementById('loggedInMessage').textContent = `Logged in as ${result.blueskyHandle}`;
+    } else {
+        if (result.blueskyHandle) document.getElementById('handle').value = result.blueskyHandle;
+        if (result.blueskyAppPassword) document.getElementById('appPassword').value = result.blueskyAppPassword;
+    }
 });
 
 // Get now playing info from the active tab
