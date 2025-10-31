@@ -28,13 +28,13 @@ function updateNowPlayingDisplay(info) {
 }
 
 document.getElementById('save').onclick = () => {
-    const instance = document.getElementById('instance').value.trim();
-    const token = document.getElementById('token').value.trim();
-    if (instance && token) {
+    const handle = document.getElementById('handle').value.trim();
+    const appPassword = document.getElementById('appPassword').value.trim();
+    if (handle && appPassword) {
         chrome.runtime.sendMessage({
-            type: "saveMastodonCredentials",
-            instance,
-            token
+            type: "saveBlueskyCredentials",
+            handle,
+            appPassword
         });
         document.getElementById('status').textContent = "Saved!";
     } else {
@@ -43,9 +43,10 @@ document.getElementById('save').onclick = () => {
 };
 
 // Load saved credentials
-chrome.storage.local.get(['mastodonInstance', 'mastodonToken'], (result) => {
-    if (result.mastodonInstance) document.getElementById('instance').value = result.mastodonInstance;
-    if (result.mastodonToken) document.getElementById('token').value = result.mastodonToken;
+chrome.storage.local.get(['blueskyHandle', 'blueskyAppPassword'], (result) => {
+    console.log('Loaded credentials:', result);
+    if (result.blueskyHandle) document.getElementById('handle').value = result.blueskyHandle;
+    if (result.blueskyAppPassword) document.getElementById('appPassword').value = result.blueskyAppPassword;
 });
 
 // Get now playing info from the active tab
@@ -63,6 +64,7 @@ document.getElementById('postnow').onclick = () => {
     if (window._nowPlaying && window._nowPlaying.title) {
         const comment = document.getElementById('comment').value.trim();
         const tags = document.getElementById('tags').value.trim();
+        // tags sent as is, # added in background
         chrome.runtime.sendMessage({
             type: "postNowPlaying",
             data: {

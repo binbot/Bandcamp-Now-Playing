@@ -155,7 +155,7 @@ MIT — do whatever you like, just don’t blame me if you accidentally share yo
 - 🎵 Bandcamp for the music.
 - 🐘 Mastodon for the fediverse.
 - 🦋 Bluesky for the social sky.
-
+- 🎨 Icons from favicon.io https://favicon.io/ and Twemoji.
 ---
 
 ## Icon
