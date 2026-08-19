@@ -18,7 +18,7 @@ function postToMastodon(status) {
 }
 
 api.runtime.onMessage.addListener((message) => {
-    if (message.type === "postNowPlaying") {
+    if (message.type === "postNowPlaying" && message.network === "mastodon") {
         if (mastodonToken && mastodonInstance) {
             let status = '';
             if (message.data.comment) {

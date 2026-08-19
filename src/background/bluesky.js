@@ -106,7 +106,7 @@ async function postToBluesky(postData) {
 }
 
 api.runtime.onMessage.addListener((message) => {
-    if (message.type === "postNowPlaying") {
+    if (message.type === "postNowPlaying" && message.network === "bluesky") {
         if (blueskyAppPassword && blueskyHandle) {
             let text = '';
             if (message.data.comment) {
