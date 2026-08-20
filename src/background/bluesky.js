@@ -1,3 +1,5 @@
+const pdsUrl = 'https://bsky.social';
+
 function decodeHtmlEntities(text) {
     return text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
@@ -10,27 +12,28 @@ api.storage.local.get(['blueskyAppPassword', 'blueskyHandle'], (result) => {
     blueskyHandle = result.blueskyHandle;
 });
 
-async function postToBluesky(postData) {
-    const pdsUrl = 'https://bsky.social';
-
-    let session;
+async function createBlueskySession(identifier, password) {
     try {
         const sessionResponse = await fetch(`${pdsUrl}/xrpc/com.atproto.server.createSession`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                identifier: blueskyHandle,
-                password: blueskyAppPassword
-            })
+            body: JSON.stringify({ identifier, password })
         });
-        session = await sessionResponse.json();
+        const data = await sessionResponse.json();
         if (!sessionResponse.ok) {
-            return;
+            return { ok: false, error: data.error || `Session creation failed (${sessionResponse.status})` };
         }
+        return { ok: true, accessJwt: data.accessJwt, did: data.did, handle: data.handle };
     } catch (error) {
+        return { ok: false, error: error.message || 'Network error' };
+    }
+}
+
+async function postToBluesky(postData) {
+    const session = await createBlueskySession(blueskyHandle, blueskyAppPassword);
+    if (!session.ok) {
         return;
     }
-
     const accessJwt = session.accessJwt;
     const repo = session.did;
 
@@ -105,7 +108,7 @@ async function postToBluesky(postData) {
     } catch (error) {}
 }
 
-api.runtime.onMessage.addListener((message) => {
+onMessage(async (message) => {
     if (message.type === "postNowPlaying" && message.network === "bluesky") {
         if (blueskyAppPassword && blueskyHandle) {
             let text = '';
@@ -117,8 +120,7 @@ api.runtime.onMessage.addListener((message) => {
 
             let tags = '#nowplaying';
             if (message.data.tags) {
-                const userTags = message.data.tags.split(' ').map(tag => `#${tag.trim()}`).join(' ');
-                tags += ' ' + userTags;
+                tags += ' ' + message.data.tags;
             }
             text += `\n\n${tags}\n\n${message.data.trackUrl}`;
 
@@ -139,8 +141,13 @@ api.runtime.onMessage.addListener((message) => {
             postToBluesky({ text, facets, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
         }
     } else if (message.type === "saveBlueskyCredentials") {
+        const result = await createBlueskySession(message.handle, message.appPassword);
+        if (!result.ok) {
+            return { ok: false, error: result.error };
+        }
         blueskyAppPassword = message.appPassword;
-        blueskyHandle = message.handle;
+        blueskyHandle = result.handle;
         api.storage.local.set({ blueskyAppPassword, blueskyHandle });
+        return { ok: true, handle: result.handle };
     }
 });

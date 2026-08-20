@@ -72,14 +72,20 @@ document.getElementById('logoutMastodon').onclick = () => {
     });
 };
 
-document.getElementById('saveBluesky').onclick = () => {
+document.getElementById('saveBluesky').onclick = async () => {
     const handle = document.getElementById('blueskyHandle').value.trim();
     const appPassword = document.getElementById('blueskyAppPassword').value.trim();
     if (handle && appPassword) {
-        api.runtime.sendMessage({ type: "saveBlueskyCredentials", handle, appPassword });
-        window._blueskyReady = true;
-        document.getElementById('blueskyStatus').textContent = "Saved!";
-        setTimeout(() => showLoggedIn('bluesky', `Logged in as ${handle}`), 1000);
+        document.getElementById('blueskyStatus').textContent = "Checking credentials…";
+        const response = await sendMessage({ type: "saveBlueskyCredentials", handle, appPassword });
+        if (response && response.ok) {
+            window._blueskyReady = true;
+            document.getElementById('blueskyHandle').value = response.handle;
+            document.getElementById('blueskyStatus').textContent = "Saved!";
+            setTimeout(() => showLoggedIn('bluesky', `Logged in as ${response.handle}`), 1000);
+        } else {
+            document.getElementById('blueskyStatus').textContent = (response && response.error) || "Invalid handle or app password.";
+        }
     } else {
         document.getElementById('blueskyStatus').textContent = "Please fill both fields.";
     }
@@ -115,6 +121,10 @@ api.storage.local.get(['blueskyHandle', 'blueskyAppPassword'], (result) => {
     }
 });
 
+function normalizeTags(raw) {
+    return (raw || '').split(/\s+/).filter(Boolean).map((tag) => `#${tag.replace(/^#+/, '')}`).join(' ');
+}
+
 function fetchNowPlaying() {
     api.tabs.query({active: true, currentWindow: true}, function(tabs) {
         if (tabs.length === 0) return;
@@ -138,7 +148,7 @@ document.getElementById('postnow').onclick = () => {
         api.runtime.sendMessage({
             type: "postNowPlaying",
             network,
-            data: { ...window._nowPlaying, comment, tags }
+            data: { ...window._nowPlaying, comment, tags: normalizeTags(tags) }
         });
         document.getElementById('poststatus').textContent = `Posted to ${network}!`;
     } else {
