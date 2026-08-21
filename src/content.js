@@ -10,6 +10,23 @@ function getAlbumData() {
     }
 }
 
+function isCollectionPage() {
+    return window.location.hostname === 'bandcamp.com' && /^\/[^\/]+\/?$/.test(window.location.pathname);
+}
+
+function getTrackUrl(title, albumData) {
+    if (albumData && title && albumData.trackinfo) {
+        const track = albumData.trackinfo.find((t) => t.title === title);
+        if (track && track.title_link) return window.location.origin + track.title_link;
+    }
+    if (!isCollectionPage()) {
+        const og = document.querySelector('meta[property="og:url"]');
+        if (og && og.content) return og.content;
+    }
+    if (isCollectionPage()) return null;
+    return window.location.href;
+}
+
 function getNowPlaying() {
     let titleElem = document.querySelector('div[data-bind="text: currentTrack().title"]') ||
                     document.querySelector('.track_info .title') ||
@@ -32,11 +49,13 @@ function getNowPlaying() {
         if (!artist && albumData.artist) artist = albumData.artist;
     }
 
-    let trackUrl = window.location.href;
+    let trackUrl = getTrackUrl(title, albumData);
+    let error = null;
+    if (isCollectionPage() && !trackUrl) error = 'collection';
 
-    window.bandcampNowPlaying = { title, artist, trackUrl, raw: `${title} by ${artist}` };
+    window.bandcampNowPlaying = { title, artist, trackUrl, raw: `${title} by ${artist}`, error };
 
-    return { title, artist, trackUrl, raw: `${title} by ${artist}` };
+    return { title, artist, trackUrl, raw: `${title} by ${artist}`, error };
 }
 
 let lastRaw = null;

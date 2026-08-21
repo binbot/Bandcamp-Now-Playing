@@ -131,11 +131,21 @@ function fetchNowPlaying() {
         api.tabs.sendMessage(tabs[0].id, {type: "getNowPlaying"}, function(response) {
             updateNowPlayingDisplay(response);
             window._nowPlaying = response;
+            if (response && response.error === 'collection') {
+                document.getElementById('postnow').disabled = true;
+                document.getElementById('poststatus').textContent = "Your collection is cozy, but Bandcamp hides the track link here — pop open the album or track page and I'll post it properly \u{1F3B6}";
+            } else {
+                document.getElementById('postnow').disabled = false;
+            }
         });
     });
 }
 
 document.getElementById('postnow').onclick = () => {
+    if (window._nowPlaying && window._nowPlaying.error === 'collection') {
+        document.getElementById('poststatus').textContent = "Your collection is cozy, but Bandcamp hides the track link here — pop open the album or track page and I'll post it properly \u{1F3B6}";
+        return;
+    }
     if (window._nowPlaying && window._nowPlaying.title) {
         const comment = document.getElementById('comment').value.trim();
         const tags = document.getElementById('tags').value.trim();
