@@ -1,0 +1,10 @@
+{
+  "name": "bandcamp-now-playing",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Browser extension to share your currently playing Bandcamp track to Mastodon or Bluesky.",
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "license": "MIT"
+}
