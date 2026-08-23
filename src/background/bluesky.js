@@ -6,8 +6,7 @@ function decodeHtmlEntities(text) {
 
 let blueskyAppPassword = null;
 let blueskyHandle = null;
-
-api.storage.local.get(['blueskyAppPassword', 'blueskyHandle'], (result) => {
+let blueskyReady = storageGet(['blueskyAppPassword', 'blueskyHandle']).then((result) => {
     blueskyAppPassword = result.blueskyAppPassword;
     blueskyHandle = result.blueskyHandle;
 });
@@ -116,8 +115,14 @@ async function postToBluesky(postData) {
 
 onMessage(async (message) => {
     if (message.type === "postNowPlaying" && message.network === "bluesky") {
+        await blueskyReady;
         if (!blueskyAppPassword || !blueskyHandle) {
-            return { ok: false, error: 'Bluesky credentials not configured.' };
+            const fresh = await storageGet(['blueskyAppPassword', 'blueskyHandle']);
+            blueskyAppPassword = fresh.blueskyAppPassword;
+            blueskyHandle = fresh.blueskyHandle;
+            if (!blueskyAppPassword || !blueskyHandle) {
+                return { ok: false, error: 'Bluesky credentials not configured.' };
+            }
         }
         let text = '';
         if (message.data.comment) {

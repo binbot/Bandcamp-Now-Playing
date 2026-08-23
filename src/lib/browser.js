@@ -24,3 +24,10 @@ function sendMessage(message) {
     }
     return new Promise((resolve) => api.runtime.sendMessage(message, resolve));
 }
+
+function storageGet(keys) {
+    if (usesPromises) {
+        return api.storage.local.get(keys);
+    }
+    return new Promise((resolve) => api.storage.local.get(keys, resolve));
+}

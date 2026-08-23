@@ -1,7 +1,6 @@
 let mastodonToken = null;
 let mastodonInstance = null;
-
-api.storage.local.get(['mastodonToken', 'mastodonInstance'], (result) => {
+let mastodonReady = storageGet(['mastodonToken', 'mastodonInstance']).then((result) => {
     mastodonToken = result.mastodonToken;
     mastodonInstance = result.mastodonInstance;
 });
@@ -31,8 +30,14 @@ async function postToMastodon(status) {
 
 onMessage(async (message) => {
     if (message.type === "postNowPlaying" && message.network === "mastodon") {
+        await mastodonReady;
         if (!mastodonToken || !mastodonInstance) {
-            return { ok: false, error: 'Mastodon credentials not configured.' };
+            const fresh = await storageGet(['mastodonToken', 'mastodonInstance']);
+            mastodonToken = fresh.mastodonToken;
+            mastodonInstance = fresh.mastodonInstance;
+            if (!mastodonToken || !mastodonInstance) {
+                return { ok: false, error: 'Mastodon credentials not configured.' };
+            }
         }
         let status = '';
         if (message.data.comment) {
