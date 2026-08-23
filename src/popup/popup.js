@@ -12,16 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchNowPlaying();
 });
 
+function saveDraft() {
+    api.storage.local.set({
+        draftComment: document.getElementById('comment').value,
+        draftTags: document.getElementById('tags').value,
+        draftNetwork: activeNetwork
+    });
+}
+
 function setActiveNetwork(network) {
     activeNetwork = network;
     document.getElementById('btnMastodon').classList.toggle('active', network === 'mastodon');
     document.getElementById('btnBluesky').classList.toggle('active', network === 'bluesky');
     document.getElementById('mastodonSection').style.display = network === 'mastodon' ? 'block' : 'none';
     document.getElementById('blueskySection').style.display = network === 'bluesky' ? 'block' : 'none';
+    saveDraft();
 }
 
 document.getElementById('btnMastodon').onclick = () => setActiveNetwork('mastodon');
 document.getElementById('btnBluesky').onclick = () => setActiveNetwork('bluesky');
+document.getElementById('comment').addEventListener('input', saveDraft);
+document.getElementById('tags').addEventListener('input', saveDraft);
 
 function updateNowPlayingDisplay(info) {
     const np = document.getElementById('nowplaying');
@@ -121,6 +132,14 @@ api.storage.local.get(['blueskyHandle', 'blueskyAppPassword'], (result) => {
     }
 });
 
+api.storage.local.get(['draftComment', 'draftTags', 'draftNetwork'], (result) => {
+    if (result.draftComment) document.getElementById('comment').value = result.draftComment;
+    if (result.draftTags) document.getElementById('tags').value = result.draftTags;
+    if (result.draftNetwork === 'mastodon' || result.draftNetwork === 'bluesky') {
+        setActiveNetwork(result.draftNetwork);
+    }
+});
+
 function normalizeTags(raw) {
     return (raw || '').split(/\s+/).filter(Boolean).map((tag) => `#${tag.replace(/^#+/, '')}`).join(' ');
 }
@@ -141,7 +160,7 @@ function fetchNowPlaying() {
     });
 }
 
-document.getElementById('postnow').onclick = () => {
+document.getElementById('postnow').onclick = async () => {
     if (window._nowPlaying && window._nowPlaying.error === 'collection') {
         document.getElementById('poststatus').textContent = "Your collection is cozy, but Bandcamp hides the track link here — pop open the album or track page and I'll post it properly \u{1F3B6}";
         return;
@@ -155,12 +174,25 @@ document.getElementById('postnow').onclick = () => {
             document.getElementById('poststatus').textContent = `Set up ${network} credentials first.`;
             return;
         }
-        api.runtime.sendMessage({
-            type: "postNowPlaying",
-            network,
-            data: { ...window._nowPlaying, comment, tags: normalizeTags(tags) }
-        });
-        document.getElementById('poststatus').textContent = `Posted to ${network}!`;
+        const btn = document.getElementById('postnow');
+        btn.disabled = true;
+        document.getElementById('poststatus').textContent = `Posting to ${network}\u2026`;
+        try {
+            const result = await sendMessage({
+                type: "postNowPlaying",
+                network,
+                data: { ...window._nowPlaying, comment, tags: normalizeTags(tags) }
+            });
+            if (result && result.ok) {
+                document.getElementById('poststatus').textContent = `Posted to ${network}!`;
+            } else {
+                document.getElementById('poststatus').textContent = (result && result.error) || `Failed to post to ${network}. Check credentials and try again.`;
+            }
+        } catch (e) {
+            document.getElementById('poststatus').textContent = `Failed to post to ${network}: ${e.message || 'unknown error'}`;
+        } finally {
+            btn.disabled = false;
+        }
     } else {
         document.getElementById('poststatus').textContent = "No track info to post.";
     }
