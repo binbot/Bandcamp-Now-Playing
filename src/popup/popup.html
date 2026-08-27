@@ -29,6 +29,19 @@
         .authSection {
             margin-bottom: 8px;
         }
+        #charCount {
+            font-size: 0.85em;
+            text-align: right;
+            margin: 4px 0 8px;
+        }
+        #charCount.over {
+            color: #c00;
+            font-weight: bold;
+        }
+        #postnow:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -69,10 +82,12 @@
         <hr>
         <div id="nowplaying">Loading now playing info…</div>
         <textarea id="comment" placeholder="Add a comment..." rows="3"></textarea>
+        <div id="charCount"></div>
         <input id="tags" placeholder="Tags (e.g. #genre #bandname)" />
         <button id="postnow">Post Now</button>
         <div id="poststatus"></div>
     </main>
+    <script src="compose.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

@@ -6,8 +6,7 @@ function decodeHtmlEntities(text) {
 
 let blueskyAppPassword = null;
 let blueskyHandle = null;
-
-api.storage.local.get(['blueskyAppPassword', 'blueskyHandle'], (result) => {
+let blueskyReady = storageGet(['blueskyAppPassword', 'blueskyHandle']).then((result) => {
     blueskyAppPassword = result.blueskyAppPassword;
     blueskyHandle = result.blueskyHandle;
 });
@@ -32,7 +31,7 @@ async function createBlueskySession(identifier, password) {
 async function postToBluesky(postData) {
     const session = await createBlueskySession(blueskyHandle, blueskyAppPassword);
     if (!session.ok) {
-        return;
+        return { ok: false, error: session.error || 'Bluesky authentication failed.' };
     }
     const accessJwt = session.accessJwt;
     const repo = session.did;
@@ -104,26 +103,29 @@ async function postToBluesky(postData) {
                 }
             })
         });
-        await postResponse.json();
-    } catch (error) {}
+        const data = await postResponse.json().catch(() => ({}));
+        if (!postResponse.ok) {
+            return { ok: false, error: data.message || data.error || `Bluesky post failed (${postResponse.status})` };
+        }
+        return { ok: true, data };
+    } catch (error) {
+        return { ok: false, error: error.message || 'Network error posting to Bluesky.' };
+    }
 }
 
-onMessage(async (message) => {
+onMessage((message) => {
     if (message.type === "postNowPlaying" && message.network === "bluesky") {
-        if (blueskyAppPassword && blueskyHandle) {
-            let text = '';
-            if (message.data.comment) {
-                text += message.data.comment + '\n\n';
+        return (async () => {
+            await blueskyReady;
+            if (!blueskyAppPassword || !blueskyHandle) {
+                const fresh = await storageGet(['blueskyAppPassword', 'blueskyHandle']);
+                blueskyAppPassword = fresh.blueskyAppPassword;
+                blueskyHandle = fresh.blueskyHandle;
+                if (!blueskyAppPassword || !blueskyHandle) {
+                    return { ok: false, error: 'Bluesky credentials not configured.' };
+                }
             }
-            text += `\u{1F3B5} Now playing: ${message.data.title}`;
-            if (message.data.artist) text += ` by ${message.data.artist}`;
-
-            let tags = '#nowplaying';
-            if (message.data.tags) {
-                tags += ' ' + message.data.tags;
-            }
-            text += `\n\n${tags}\n\n${message.data.trackUrl}`;
-
+            const text = composeNowPlaying('bluesky', message.data, message.data.comment, message.data.tags);
             const facets = [];
             const encoder = new TextEncoder();
             const tagRegex = /#(\w+)/g;
@@ -138,16 +140,19 @@ onMessage(async (message) => {
                 });
             }
 
-            postToBluesky({ text, facets, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
-        }
+            return postToBluesky({ text, facets, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
+        })();
     } else if (message.type === "saveBlueskyCredentials") {
-        const result = await createBlueskySession(message.handle, message.appPassword);
-        if (!result.ok) {
-            return { ok: false, error: result.error };
-        }
-        blueskyAppPassword = message.appPassword;
-        blueskyHandle = result.handle;
-        api.storage.local.set({ blueskyAppPassword, blueskyHandle });
-        return { ok: true, handle: result.handle };
+        return (async () => {
+            const result = await createBlueskySession(message.handle, message.appPassword);
+            if (!result.ok) {
+                return { ok: false, error: result.error };
+            }
+            blueskyAppPassword = message.appPassword;
+            blueskyHandle = result.handle;
+            api.storage.local.set({ blueskyAppPassword, blueskyHandle });
+            return { ok: true, handle: result.handle };
+        })();
     }
+    return undefined;
 });

@@ -15,11 +15,9 @@
 
 ## Browser Support
 
-🌐 This extension works in **Chrome/Chromium**, **Firefox/Gecko**, and **Safari** browsers. Choose the version that matches your browser and platform:
+🌐 One **unified** extension for **Chrome/Chromium**, **Firefox/Gecko**, and **Safari** — Mastodon + Bluesky in one popup (Manifest V3 on Chrome/Safari, V2 on Firefox). You pick the network in the popup; no separate installs.
 
-- **Chrome/Chromium:** Use the `chrome/` folder (Manifest V3) for Mastodon or Bluesky.
-- **Firefox/Gecko (including Zend):** Use the `firefox/` folder (Manifest V2) for Mastodon or Bluesky.
-- **Safari (macOS):** Use the `safari/` folder (Manifest V3-based, requires conversion) for Mastodon or Bluesky.
+Built from source via `npm run build` → `dist/{chrome,firefox,safari}/` (or grab a ready-made zip from Releases).
 
 ---
 
@@ -77,51 +75,41 @@
 
 ### Developer Installation (from Source)
 
+1. Clone this repo and build it — `dist/` is gitignored, so you must build on every machine:
+   ```
+   git clone git@codeberg.org:binbot/Bandcamp-Now-Playing.git
+   npm run build   # or npm run build after every git pull — emits dist/{chrome,firefox,safari}/
+   ```
+   (Zero extra deps; just Node. Build verification runs `node --check` + marker checks.)
+
 #### Chrome/Chromium (Manifest V3)
 
-1. Download or clone this repo.
-2. Go to `chrome://extensions/` in Chrome.
-3. Enable “Developer mode” (top right).
-4. Click “Load unpacked” and select the `mastodon/chrome/` or `bluesky/chrome/` folder.
-5. Click the extension icon and enter your credentials (Mastodon: instance + token; Bluesky: handle + app password).
-6. Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
+1. Go to `chrome://extensions/` in Chrome.
+2. Enable "Developer mode" (top right).
+3. Click "Load unpacked" and select `dist/chrome/`.
+4. Click the extension icon, pick **Mastodon** or **Bluesky** at the top of the popup, and enter your credentials.
+5. Open a Bandcamp album or track, play a song, and click "Post Now" — drafts persist, the button shows live character counts (Bluesky 300, Mastodon 500/instance), and blocks over-limit posts.
 
-#### Firefox/Gecko (Manifest V2)
+#### Firefox/Gecko (Manifest V2, including Zen)
 
-1. Download or clone this repo.
-2. Open Firefox.
-3. Go to `about:debugging#/runtime/this-firefox`
-4. Click “Load Temporary Add-on.”
-5. Select the `manifest.json` file inside the `mastodon/firefox/` or `bluesky/firefox/` folder.
-6. Click the extension icon, enter your credentials (Mastodon: instance + token; Bluesky: handle + app password).
-7. Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
+1. Open Firefox.
+2. Go to `about:debugging#/runtime/this-firefox`.
+3. Click "Load Temporary Add-on…".
+4. Select `dist/firefox/manifest.json`.
+5. Pick the network in the popup, enter creds, and post.
 
 #### Safari (macOS)
 
-Safari extensions require a different installation process involving Xcode.
+Safari still uses Manifest V3 but requires Xcode conversion:
 
-1.  **Prerequisites:**
-    - A Mac with Xcode installed.
-    - An Apple Developer Program membership (for distribution, not for local testing).
-
-2.  **Convert the Extension:**
-    - Open the Terminal app on your Mac.
-    - Navigate to your project directory.
-    - Run: `xcrun safari-web-extension-converter mastodon/safari/` or `bluesky/safari/`
-
-3.  **Build and Run in Xcode:**
-    - Open the generated Xcode project.
-    - Select "My Mac" as the build target.
-    - Click the Run button (▸) to build and launch Safari.
-
-4.  **Enable the Extension in Safari:**
-    - In Safari, go to `Safari > Preferences > Advanced` > enable "Show Develop menu".
-    - Develop menu > "Allow Unsigned Extensions".
-    - Safari > Preferences > Extensions > enable "Bandcamp Now Playing to Mastodon/Bluesky".
-
-5.  **Usage:**
-    - Click the extension icon, enter your credentials.
-    - Open a Bandcamp album or track, play a song, and click “Post Now” in the popup.
+1. **Prerequisites:** a Mac with Xcode (Apple Developer Program for distribution only; local testing works without).
+2. **Convert the built extension:**
+   ```
+   xcrun safari-web-extension-converter dist/safari/
+   ```
+3. **Build and Run in Xcode:** open the generated Xcode project, select "My Mac", Run (▸).
+4. **Enable:** Safari → Preferences → Advanced → "Show Develop menu" → Develop → "Allow Unsigned Extensions" → Preferences → Extensions → enable "Bandcamp Now Playing".
+5. Pick a network, enter creds, and post.
 
 ---
 
