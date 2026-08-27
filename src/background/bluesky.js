@@ -113,53 +113,58 @@ async function postToBluesky(postData) {
     }
 }
 
-onMessage(async (message) => {
+onMessage((message) => {
     if (message.type === "postNowPlaying" && message.network === "bluesky") {
-        await blueskyReady;
-        if (!blueskyAppPassword || !blueskyHandle) {
-            const fresh = await storageGet(['blueskyAppPassword', 'blueskyHandle']);
-            blueskyAppPassword = fresh.blueskyAppPassword;
-            blueskyHandle = fresh.blueskyHandle;
+        return (async () => {
+            await blueskyReady;
             if (!blueskyAppPassword || !blueskyHandle) {
-                return { ok: false, error: 'Bluesky credentials not configured.' };
+                const fresh = await storageGet(['blueskyAppPassword', 'blueskyHandle']);
+                blueskyAppPassword = fresh.blueskyAppPassword;
+                blueskyHandle = fresh.blueskyHandle;
+                if (!blueskyAppPassword || !blueskyHandle) {
+                    return { ok: false, error: 'Bluesky credentials not configured.' };
+                }
             }
-        }
-        let text = '';
-        if (message.data.comment) {
-            text += message.data.comment + '\n\n';
-        }
-        text += `\u{1F3B5} Now playing: ${message.data.title}`;
-        if (message.data.artist) text += ` by ${message.data.artist}`;
+            let text = '';
+            if (message.data.comment) {
+                text += message.data.comment + '\n\n';
+            }
+            text += `\u{1F3B5} Now playing: ${message.data.title}`;
+            if (message.data.artist) text += ` by ${message.data.artist}`;
 
-        let tags = '#nowplaying';
-        if (message.data.tags) {
-            tags += ' ' + message.data.tags;
-        }
-        text += `\n\n${tags}\n\n${message.data.trackUrl}`;
+            let tags = '#nowplaying';
+            if (message.data.tags) {
+                tags += ' ' + message.data.tags;
+            }
+            text += `\n\n${tags}\n\n${message.data.trackUrl}`;
 
-        const facets = [];
-        const encoder = new TextEncoder();
-        const tagRegex = /#(\w+)/g;
-        let match;
-        while ((match = tagRegex.exec(text)) !== null) {
-            const byteStart = encoder.encode(text.substring(0, match.index)).length;
-            const byteEnd = byteStart + encoder.encode(match[0]).length;
-            facets.push({
-                "$type": "app.bsky.richtext.facet",
-                "features": [{ "$type": "app.bsky.richtext.facet#tag", "tag": match[1] }],
-                "index": { "byteStart": byteStart, "byteEnd": byteEnd }
-            });
-        }
+            const facets = [];
+            const encoder = new TextEncoder();
+            const tagRegex = /#(\w+)/g;
+            let match;
+            while ((match = tagRegex.exec(text)) !== null) {
+                const byteStart = encoder.encode(text.substring(0, match.index)).length;
+                const byteEnd = byteStart + encoder.encode(match[0]).length;
+                facets.push({
+                    "$type": "app.bsky.richtext.facet",
+                    "features": [{ "$type": "app.bsky.richtext.facet#tag", "tag": match[1] }],
+                    "index": { "byteStart": byteStart, "byteEnd": byteEnd }
+                });
+            }
 
-        return postToBluesky({ text, facets, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
+            return postToBluesky({ text, facets, title: message.data.title, artist: message.data.artist, trackUrl: message.data.trackUrl });
+        })();
     } else if (message.type === "saveBlueskyCredentials") {
-        const result = await createBlueskySession(message.handle, message.appPassword);
-        if (!result.ok) {
-            return { ok: false, error: result.error };
-        }
-        blueskyAppPassword = message.appPassword;
-        blueskyHandle = result.handle;
-        api.storage.local.set({ blueskyAppPassword, blueskyHandle });
-        return { ok: true, handle: result.handle };
+        return (async () => {
+            const result = await createBlueskySession(message.handle, message.appPassword);
+            if (!result.ok) {
+                return { ok: false, error: result.error };
+            }
+            blueskyAppPassword = message.appPassword;
+            blueskyHandle = result.handle;
+            api.storage.local.set({ blueskyAppPassword, blueskyHandle });
+            return { ok: true, handle: result.handle };
+        })();
     }
+    return undefined;
 });

@@ -26,6 +26,12 @@ function setActiveNetwork(network) {
     document.getElementById('btnBluesky').classList.toggle('active', network === 'bluesky');
     document.getElementById('mastodonSection').style.display = network === 'mastodon' ? 'block' : 'none';
     document.getElementById('blueskySection').style.display = network === 'bluesky' ? 'block' : 'none';
+    window._posted = false;
+    const btn = document.getElementById('postnow');
+    if (btn && !(window._nowPlaying && window._nowPlaying.error === 'collection')) {
+        btn.disabled = false;
+        btn.textContent = 'Post Now';
+    }
     saveDraft();
 }
 
@@ -59,6 +65,7 @@ function showLoggedOut(network) {
 
 window._mastodonReady = false;
 window._blueskyReady = false;
+window._posted = false;
 
 document.getElementById('saveMastodon').onclick = () => {
     const instance = document.getElementById('mastodonInstance').value.trim();
@@ -150,11 +157,14 @@ function fetchNowPlaying() {
         api.tabs.sendMessage(tabs[0].id, {type: "getNowPlaying"}, function(response) {
             updateNowPlayingDisplay(response);
             window._nowPlaying = response;
+            window._posted = false;
+            const btn = document.getElementById('postnow');
+            btn.textContent = 'Post Now';
             if (response && response.error === 'collection') {
-                document.getElementById('postnow').disabled = true;
+                btn.disabled = true;
                 document.getElementById('poststatus').textContent = "Your collection is cozy, but Bandcamp hides the track link here — pop open the album or track page and I'll post it properly \u{1F3B6}";
             } else {
-                document.getElementById('postnow').disabled = false;
+                btn.disabled = false;
             }
         });
     });
@@ -166,6 +176,10 @@ document.getElementById('postnow').onclick = async () => {
         return;
     }
     if (window._nowPlaying && window._nowPlaying.title) {
+        if (window._posted) {
+            document.getElementById('poststatus').textContent = `Already posted to ${activeNetwork} ✓ — switch networks or reload the track to post again.`;
+            return;
+        }
         const comment = document.getElementById('comment').value.trim();
         const tags = document.getElementById('tags').value.trim();
         const network = activeNetwork;
@@ -184,13 +198,16 @@ document.getElementById('postnow').onclick = async () => {
                 data: { ...window._nowPlaying, comment, tags: normalizeTags(tags) }
             });
             if (result && result.ok) {
-                document.getElementById('poststatus').textContent = `Posted to ${network}!`;
+                window._posted = true;
+                document.getElementById('poststatus').textContent = `Posted to ${network} ✓`;
+                btn.textContent = 'Posted ✓';
+                btn.disabled = true;
             } else {
                 document.getElementById('poststatus').textContent = (result && result.error) || `Failed to post to ${network}. Check credentials and try again.`;
+                btn.disabled = false;
             }
         } catch (e) {
             document.getElementById('poststatus').textContent = `Failed to post to ${network}: ${e.message || 'unknown error'}`;
-        } finally {
             btn.disabled = false;
         }
     } else {

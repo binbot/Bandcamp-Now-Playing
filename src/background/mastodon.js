@@ -28,35 +28,39 @@ async function postToMastodon(status) {
     }
 }
 
-onMessage(async (message) => {
+onMessage((message) => {
     if (message.type === "postNowPlaying" && message.network === "mastodon") {
-        await mastodonReady;
-        if (!mastodonToken || !mastodonInstance) {
-            const fresh = await storageGet(['mastodonToken', 'mastodonInstance']);
-            mastodonToken = fresh.mastodonToken;
-            mastodonInstance = fresh.mastodonInstance;
+        return (async () => {
+            await mastodonReady;
             if (!mastodonToken || !mastodonInstance) {
-                return { ok: false, error: 'Mastodon credentials not configured.' };
+                const fresh = await storageGet(['mastodonToken', 'mastodonInstance']);
+                mastodonToken = fresh.mastodonToken;
+                mastodonInstance = fresh.mastodonInstance;
+                if (!mastodonToken || !mastodonInstance) {
+                    return { ok: false, error: 'Mastodon credentials not configured.' };
+                }
             }
-        }
-        let status = '';
-        if (message.data.comment) {
-            status += message.data.comment + '\n\n';
-        }
-        status += `\u{1F3B5} Now playing: ${message.data.title}`;
-        if (message.data.artist) status += ` by ${message.data.artist}`;
-        if (message.data.trackUrl) status += `\n${message.data.trackUrl}`;
+            let status = '';
+            if (message.data.comment) {
+                status += message.data.comment + '\n\n';
+            }
+            status += `\u{1F3B5} Now playing: ${message.data.title}`;
+            if (message.data.artist) status += ` by ${message.data.artist}`;
+            if (message.data.trackUrl) status += `\n${message.data.trackUrl}`;
 
-        let tags = '#nowplaying';
-        if (message.data.tags) {
-            tags += ' ' + message.data.tags;
-        }
-        status += `\n\n${tags}`;
+            let tags = '#nowplaying';
+            if (message.data.tags) {
+                tags += ' ' + message.data.tags;
+            }
+            status += `\n\n${tags}`;
 
-        return postToMastodon(status);
+            return postToMastodon(status);
+        })();
     } else if (message.type === "saveMastodonCredentials") {
         mastodonToken = message.token;
         mastodonInstance = message.instance;
         api.storage.local.set({ mastodonToken, mastodonInstance });
+        return { ok: true };
     }
+    return undefined;
 });
