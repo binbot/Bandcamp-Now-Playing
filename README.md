@@ -1,21 +1,21 @@
 # Bandcamp-Now-Playing
 
-🎵 A simple browser extension to share your currently playing Bandcamp track—complete with clickable link and auto-generated artwork/player preview—directly to Mastodon or Bluesky with the click of a button. No scraping hacks, no complicated APIs, and no CORS headaches. Just a simple access token/password and music, your way.
+A simple browser extension to share your currently playing Bandcamp track — complete with clickable link and auto-generated artwork/player preview — directly to Mastodon or Bluesky with the click of a button. No scraping hacks, no complicated APIs, and no CORS headaches. Just a simple access token/password and music, your way.
 
 ---
 
 ## Features
 
-- 🎶 **Manual posting:** Click “Post Now” only when you want to share—no spam.
-- 🔗 **Link sharing:** Posts include a direct link to the Bandcamp track or album, which Mastodon/Bluesky will expand with artwork and a player.
-- 🔒 **Privacy friendly:** No credentials stored except your access token/password (saved locally in your browser).
-- 🌟 **Open source:** Tweak, remix, or fork as you wish.
+- **Manual posting:** Click "Post Now" only when you want to share — no spam.
+- **Link sharing:** Posts include a direct link to the Bandcamp track or album, which Mastodon/Bluesky will expand with artwork and a player.
+- **Privacy friendly:** No credentials stored except your access token/password (saved locally in your browser).
+- **Open source:** Tweak, remix, or fork as you wish.
 
 ---
 
 ## Browser Support
 
-🌐 One **unified** extension for **Chrome/Chromium**, **Firefox/Gecko**, and **Safari** — Mastodon + Bluesky in one popup (Manifest V3 on Chrome/Safari, V2 on Firefox). You pick the network in the popup; no separate installs.
+One unified extension for **Chrome/Chromium**, **Firefox/Gecko**, and **Safari** — Mastodon + Bluesky in one popup (Manifest V3 on Chrome/Safari, V2 on Firefox). You pick the network in the popup; no separate installs.
 
 Built from source via `npm run build` → `dist/{chrome,firefox,safari}/` (or grab a ready-made zip from Releases).
 
@@ -23,27 +23,27 @@ Built from source via `npm run build` → `dist/{chrome,firefox,safari}/` (or gr
 
 ### Getting a Mastodon Access Token
 
-🔑 To use the Mastodon version, generate an access token from your Mastodon account. This token allows the extension to post on your behalf.
+To use the Mastodon integration, generate an access token from your Mastodon account. This token allows the extension to post on your behalf.
 
-1.  Log in to your Mastodon account on your instance (e.g., `mastodon.social`).
-2.  Go to **Preferences > Development**.
-3.  Click **"New Application"**.
-4.  Give your application a **Name** (e.g., "Bandcamp Now Playing").
-5.  Under **Application scopes**, check `write:statuses`.
-6.  Click **"Submit"**.
-7.  Click on your new application in the list.
-8.  Copy the **"Your access token"** and paste it into the extension's settings.
+1. Log in to your Mastodon account on your instance (e.g., `mastodon.social`).
+2. Go to **Preferences > Development**.
+3. Click **"New Application"**.
+4. Give your application a **Name** (e.g., "Bandcamp Now Playing").
+5. Under **Application scopes**, check `write:statuses`.
+6. Click **"Submit"**.
+7. Click on your new application in the list.
+8. Copy the **"Your access token"** and paste it into the extension's settings.
 
 ### Getting a Bluesky App Password
 
-🔑 To use the Bluesky version, create an app password from your Bluesky account. This allows the extension to post on your behalf.
+To use the Bluesky integration, create an app password from your Bluesky account. This allows the extension to post on your behalf.
 
-1.  Log in to your Bluesky account at [bsky.app](https://bsky.app).
-2.  Go to **Settings > App Passwords**.
-3.  Click **"Add App Password"**.
-4.  Give it a **Name** (e.g., "Bandcamp Now Playing").
-5.  Click **"Create"**.
-6.  Copy the generated app password and paste it into the extension's settings (along with your handle, e.g., `user.bsky.social`).
+1. Log in to your Bluesky account at [bsky.app](https://bsky.app).
+2. Go to **Settings > App Passwords**.
+3. Click **"Add App Password"**.
+4. Give it a **Name** (e.g., "Bandcamp Now Playing").
+5. Click **"Create"**.
+6. Copy the generated app password and paste it into the extension's settings (along with your handle, e.g., `user.bsky.social`).
 
 ---
 
@@ -51,27 +51,25 @@ Built from source via `npm run build` → `dist/{chrome,firefox,safari}/` (or gr
 
 ### Easy Installation (Recommended)
 
-🎉 Download ready-to-install files from the [**Releases page**](https://github.com/YOUR_USERNAME/YOUR_REPONAME/releases) on GitHub.
+Download ready-to-install files from the [**Releases page**](https://github.com/binbot/Bandcamp-Now-Playing/releases) on GitHub.
 
-1.  Choose your platform: **Mastodon** or **Bluesky**.
-2.  Download the file for your browser:
-    - Chrome: `.zip` (e.g., `mastodon-chrome.zip` or `bluesky-chrome.zip`)
-    - Firefox: `.xpi` (e.g., `mastodon-firefox.xpi` or `bluesky-firefox.xpi`)
-    - Safari: `.zip` (e.g., `mastodon-safari.zip` or `bluesky-safari.zip`)
-3.  **For Chrome:**
-    - Go to `chrome://extensions/`.
-    - Enable "Developer mode".
-    - Drag and drop the `.zip` file onto the page.
-4.  **For Firefox:**
-    - Go to `about:addons`.
-    - Click the gear icon > "Install Add-on From File...".
-    - Select the `.xpi` file.
-5.  **For Safari:**
-    - Unzip the `.zip` file.
-    - Load as unpacked extension via Safari Extension Builder.
-6.  Click the extension icon, enter your credentials (Mastodon: instance + token; Bluesky: handle + app password).
-7.  Start playing a track on Bandcamp and enjoy! 🎶
-
+1. Download the file for your browser from the latest release (`v1.2` or newer):
+   - Chrome: `bandcamp-now-playing-chrome.zip`
+   - Firefox: `bandcamp-now-playing-firefox.zip` (or `.xpi`)
+   - Safari: `bandcamp-now-playing-safari.zip`
+2. **For Chrome:**
+   - Go to `chrome://extensions/`.
+   - Enable "Developer mode".
+   - Drag and drop the `.zip` file onto the page (or use "Load unpacked" after unzipping).
+3. **For Firefox:**
+   - Go to `about:addons`.
+   - Click the gear icon > "Install Add-on From File...".
+   - Select the `.zip`/`.xpi` file.
+4. **For Safari:**
+   - Unzip the `.zip` file.
+   - Load as unpacked extension via Safari Extension Builder, or run `xcrun safari-web-extension-converter` on `dist/safari/` and open in Xcode (see Developer Installation below).
+5. Click the extension icon, pick **Mastodon** or **Bluesky** at the top of the popup, and enter your credentials.
+6. Start playing a track on Bandcamp and enjoy.
 
 ### Developer Installation (from Source)
 
@@ -107,7 +105,7 @@ Safari still uses Manifest V3 but requires Xcode conversion:
    ```
    xcrun safari-web-extension-converter dist/safari/
    ```
-3. **Build and Run in Xcode:** open the generated Xcode project, select "My Mac", Run (▸).
+3. **Build and Run in Xcode:** open the generated Xcode project, select "My Mac", Run.
 4. **Enable:** Safari → Preferences → Advanced → "Show Develop menu" → Develop → "Allow Unsigned Extensions" → Preferences → Extensions → enable "Bandcamp Now Playing".
 5. Pick a network, enter creds, and post.
 
@@ -115,15 +113,15 @@ Safari still uses Manifest V3 but requires Xcode conversion:
 
 ## How It Works
 
-🎼 The extension reads the currently playing track and artist from Bandcamp’s player bar. When you click “Post Now,” it sends a status to your Mastodon/Bluesky account with the track info, hashtags, and a link. The platform’s link preview automatically displays the album art and a player.
+The extension reads the currently playing track and artist from Bandcamp's player bar. When you click "Post Now," it sends a status to your Mastodon/Bluesky account with the track info, hashtags, and a link. The platform's link preview automatically displays the album art and a player.
 
 ---
 
 ## To Do
 
-- [ ] Create and publish proper Chrome Web Store extensions (Mastodon & Bluesky).
-- [ ] Create and publish proper Firefox Add-ons (AMO) extensions (Mastodon & Bluesky).
-- [ ] Create and publish proper Safari App Store extensions (Mastodon & Bluesky).
+- [ ] Create and publish proper Chrome Web Store extensions.
+- [ ] Create and publish proper Firefox Add-ons (AMO) extensions.
+- [ ] Create and publish proper Safari App Store extensions.
 - [ ] Add support for more music sites (SoundCloud, YouTube Music, etc).
 - [ ] Option to auto-post on track change.
 - [ ] Customizable post message templates.
@@ -134,25 +132,27 @@ Safari still uses Manifest V3 but requires Xcode conversion:
 
 ## License
 
-MIT — do whatever you like, just don’t blame me if you accidentally share your secret ambient playlist.
+MIT — do whatever you like, just do not blame me if you accidentally share your secret ambient playlist.
 
 ---
 
 ## Credits
 
-- 🎵 Bandcamp for the music.
-- 🐘 Mastodon for the fediverse.
-- 🦋 Bluesky for the social sky.
-- 🎨 Icons from favicon.io https://favicon.io/ and Twemoji.
+- Bandcamp for the music.
+- Mastodon for the fediverse.
+- Bluesky for the social network.
+- Icons from favicon.io https://favicon.io/ and Twemoji.
+
 ---
 
 ## Icon
 
-🎨 A simple, friendly suggestion:
-- Create a 128x128 PNG with a music note and the Bandcamp “BC” waveform logo, or overlay a music note on Mastodon’s “M” or Bluesky’s butterfly logo.
+A simple, friendly suggestion:
+
+- Create a 128x128 PNG with a music note and the Bandcamp "BC" waveform logo, or overlay a music note on Mastodon's "M" or Bluesky's butterfly logo.
 - [favicon.io](https://favicon.io/) is great for quick icons, or try Canva for a custom look.
 - Save as `icon16.png`, `icon32.png`, `icon48.png`, and `icon128.png` in your extension folder.
 
 ---
 
-**Questions? Ideas? PRs? File an issue or fork away! Enjoy sharing your Bandcamp discoveries on Mastodon or Bluesky! 🚀**
+**Questions? Ideas? PRs? File an issue or fork away. Enjoy sharing your Bandcamp discoveries on Mastodon or Bluesky.**
