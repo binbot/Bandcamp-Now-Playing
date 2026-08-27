@@ -48,6 +48,7 @@ const BROWSERS = {
 };
 
 const SHIM = fs.readFileSync(path.join(SRC, 'lib', 'browser.js'), 'utf8');
+const COMPOSE = fs.readFileSync(path.join(SRC, 'lib', 'compose.js'), 'utf8');
 
 function readSource(file) {
     return fs.readFileSync(file, 'utf8');
@@ -61,7 +62,7 @@ function buildBackground() {
     const bodies = ['mastodon', 'bluesky']
         .map((network) => readSource(path.join(SRC, 'background', `${network}.js`)))
         .join('\n\n');
-    return withShim(bodies);
+    return withShim(`${COMPOSE}\n\n${bodies}`);
 }
 
 function buildManifest(browser) {
@@ -139,9 +140,10 @@ for (const [browserName, browser] of Object.entries(BROWSERS)) {
     );
     fs.writeFileSync(
         path.join(dir, 'popup.js'),
-        withShim(readSource(path.join(SRC, 'popup', 'popup.js')))
+        withShim(`${COMPOSE}\n\n${readSource(path.join(SRC, 'popup', 'popup.js'))}`)
     );
     fs.copyFileSync(path.join(SRC, 'popup', 'popup.html'), path.join(dir, 'popup.html'));
+    fs.copyFileSync(path.join(SRC, 'lib', 'compose.js'), path.join(dir, 'compose.js'));
 
     for (const icon of ICONS) {
         fs.copyFileSync(path.join(SRC, 'icons', icon), path.join(dir, icon));

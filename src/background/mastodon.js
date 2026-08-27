@@ -1,9 +1,23 @@
 let mastodonToken = null;
 let mastodonInstance = null;
-let mastodonReady = storageGet(['mastodonToken', 'mastodonInstance']).then((result) => {
+let mastodonMaxChars = 500;
+let mastodonReady = storageGet(['mastodonToken', 'mastodonInstance', 'mastodonMaxChars']).then((result) => {
     mastodonToken = result.mastodonToken;
     mastodonInstance = result.mastodonInstance;
+    if (result.mastodonMaxChars) mastodonMaxChars = result.mastodonMaxChars;
 });
+
+async function fetchMastodonMaxChars(instance) {
+    try {
+        const url = instance.replace(/\/+$/, '') + '/api/v1/instance';
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const c = data?.configuration?.statuses?.max_characters ?? data?.max_characters ?? null;
+        if (typeof c === 'number' && c > 0) return c;
+    } catch (_) {}
+    return null;
+}
 
 async function postToMastodon(status) {
     if (!mastodonInstance || !mastodonToken) {
@@ -40,27 +54,37 @@ onMessage((message) => {
                     return { ok: false, error: 'Mastodon credentials not configured.' };
                 }
             }
-            let status = '';
-            if (message.data.comment) {
-                status += message.data.comment + '\n\n';
-            }
-            status += `\u{1F3B5} Now playing: ${message.data.title}`;
-            if (message.data.artist) status += ` by ${message.data.artist}`;
-            if (message.data.trackUrl) status += `\n${message.data.trackUrl}`;
-
-            let tags = '#nowplaying';
-            if (message.data.tags) {
-                tags += ' ' + message.data.tags;
-            }
-            status += `\n\n${tags}`;
-
+            const status = composeNowPlaying('mastodon', message.data, message.data.comment, message.data.tags);
             return postToMastodon(status);
         })();
     } else if (message.type === "saveMastodonCredentials") {
         mastodonToken = message.token;
         mastodonInstance = message.instance;
-        api.storage.local.set({ mastodonToken, mastodonInstance });
-        return { ok: true };
+        return (async () => {
+            const maxChars = await fetchMastodonMaxChars(mastodonInstance);
+            if (maxChars) mastodonMaxChars = maxChars;
+            api.storage.local.set({
+                mastodonToken,
+                mastodonInstance,
+                mastodonMaxChars: mastodonMaxChars
+            });
+            return { ok: true, maxChars: mastodonMaxChars };
+        })();
+    } else if (message.type === "fetchMastodonLimit") {
+        return (async () => {
+            if (!mastodonInstance) {
+                const fresh = await storageGet(['mastodonInstance', 'mastodonMaxChars']);
+                if (fresh.mastodonInstance) mastodonInstance = fresh.mastodonInstance;
+                if (fresh.mastodonMaxChars) mastodonMaxChars = fresh.mastodonMaxChars;
+            }
+            if (!mastodonInstance) return { ok: false, maxChars: mastodonMaxChars };
+            const maxChars = await fetchMastodonMaxChars(mastodonInstance);
+            if (maxChars) {
+                mastodonMaxChars = maxChars;
+                api.storage.local.set({ mastodonMaxChars: maxChars });
+            }
+            return { ok: true, maxChars: mastodonMaxChars };
+        })();
     }
     return undefined;
 });

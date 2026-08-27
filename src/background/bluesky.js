@@ -125,19 +125,7 @@ onMessage((message) => {
                     return { ok: false, error: 'Bluesky credentials not configured.' };
                 }
             }
-            let text = '';
-            if (message.data.comment) {
-                text += message.data.comment + '\n\n';
-            }
-            text += `\u{1F3B5} Now playing: ${message.data.title}`;
-            if (message.data.artist) text += ` by ${message.data.artist}`;
-
-            let tags = '#nowplaying';
-            if (message.data.tags) {
-                tags += ' ' + message.data.tags;
-            }
-            text += `\n\n${tags}\n\n${message.data.trackUrl}`;
-
+            const text = composeNowPlaying('bluesky', message.data, message.data.comment, message.data.tags);
             const facets = [];
             const encoder = new TextEncoder();
             const tagRegex = /#(\w+)/g;
